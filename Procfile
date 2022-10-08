@@ -1,0 +1,1 @@
+web : java -jar out/artifacts/peopledb_web_jar/people-web.jar
