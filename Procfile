@@ -1,0 +1,1 @@
+web: jar -jar build/libs/peopledb-web.jar

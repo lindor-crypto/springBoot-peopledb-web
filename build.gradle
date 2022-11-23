@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.neutrinosys'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = "15"
 
 configurations {
 	compileOnly {
@@ -34,3 +34,4 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+targetCompatibility = JavaVersion.VERSION_15

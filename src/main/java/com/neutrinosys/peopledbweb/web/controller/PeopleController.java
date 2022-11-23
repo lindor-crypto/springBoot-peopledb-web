@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
-
 @Controller
 @RequestMapping("/people")
 @Log4j2

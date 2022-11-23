@@ -34,7 +34,7 @@ public class FileStorageRepository {
             Path path = getNormalize(filename);
             return   new UrlResource(path.toUri());
         } catch (MalformedURLException e) {
-            throw new StorageException(e);
+                throw new StorageException(e);
         }
     }
 
