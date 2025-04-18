@@ -45,8 +45,9 @@ public class Person {
     private String folderFileName;
 
     public static Person parse(String csvLine) {
-        String[] fields = csvLine.split(";\\s*");
-        LocalDate dob = LocalDate.parse(fields[12], DateTimeFormatter.ofPattern("M/d/yyyy"));
-        return  new Person(null,fields[0], fields[1], dob, fields[10], new BigDecimal(120000), null );
+    String[] fields = csvLine.split(",\\s*");
+    LocalDate dob = LocalDate.parse(fields[13], DateTimeFormatter.ofPattern("M/d/yyyy"));
+    return new Person(null, fields[0], fields[1], dob, fields[11], new BigDecimal(120000), null );
     }
+
 }
