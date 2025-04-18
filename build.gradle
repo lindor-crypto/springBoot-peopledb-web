@@ -36,3 +36,7 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 targetCompatibility = JavaVersion.VERSION_15
+checkstyle {
+    toolVersion = '10.12.1'
+    configFile = file("config/checkstyle/checkstyle.xml")
+}
