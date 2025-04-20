@@ -1,5 +1,5 @@
 
-package com.neutrinosys.peopledbweb.model;
+package com.neutrinosys.peopledbweb.biz.model;
 
 import javax.persistence.*;
 
