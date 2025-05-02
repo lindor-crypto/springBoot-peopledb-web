@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -6,12 +5,14 @@ pipeline {
         jdk 'JDK17'
         gradle 'Grad7.5'
     }
+
     environment {
+        JAVA_OPTS = "-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400"
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = "346296964327.dkr.ecr.us-east-1.amazonaws.com/peopledb-app"
         vprofileRegistry = ""
-        cluster="peopledb-cluster"
-        service="peopledb-service"
+        cluster = "peopledb-cluster"
+        service = "peopledb-service"
     }
 
     stages {
@@ -19,7 +20,6 @@ pipeline {
             steps {
                 echo "======== Clonage du dépôt ========"
                 git branch: 'master', url: 'https://github.com/lindor-crypto/springBoot-peopledb-web.git'
-		
             }
         }
 
@@ -43,21 +43,21 @@ pipeline {
             steps {
                 echo "======== Construction du projet ========"
                 sh 'chmod +x gradlew'
-                sh './gradlew clean build -x test'
+                sh './gradlew --no-daemon clean build -x test'
             }
         }
 
         stage('Tests unitaires') {
             steps {
                 echo "======== Exécution des tests ========"
-                sh './gradlew test'
+                sh './gradlew --no-daemon test'
             }
         }
 
         stage('Analyse Checkstyle') {
             steps {
                 echo "======== Analyse Checkstyle ========"
-                sh './gradlew checkstyleMain'
+                sh './gradlew --no-daemon checkstyleMain'
             }
         }
 
@@ -67,42 +67,42 @@ pipeline {
                 archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
             }
         }
+
         stage('Build App Image') {
-          steps {
-            dir('app/springboot-peopledb-web') {
-            script {
-                dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER")
+            steps {
+                dir('app/springboot-peopledb-web') {
+                    script {
+                        dockerImage = docker.build(appRegistry + ":$BUILD_NUMBER")
+                    }
                 }
             }
-          }
         }
 
         stage('Upload App Image') {
-          steps{
-            script {
-              docker.withRegistry( vprofileRegistry, registryCredential ) {
-                dockerImage.push("$BUILD_NUMBER")
-                dockerImage.push('latest')
-              }
+            steps {
+                script {
+                    docker.withRegistry(vprofileRegistry, registryCredential) {
+                        dockerImage.push("$BUILD_NUMBER")
+                        dockerImage.push('latest')
+                    }
+                }
             }
-          }
         }
+
         stage('Remove Docker Image') {
             steps {
-            echo "🧹 Suppression de l'image Docker après le build..."
-             sh 'docker rmi -f $(docker images -a -q)'
-
+                echo "🧹 Suppression de l'image Docker après le build..."
+                sh 'docker rmi -f $(docker images -a -q) || true'
             }
         }
+
         stage('Deploy to ecs') {
-          steps {
-            withAWS(credentials: 'awscreds', region: 'us-east-1') {
-            sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
-               }
-          }
+            steps {
+                withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                }
+            }
         }
-
-
     }
 
     post {
