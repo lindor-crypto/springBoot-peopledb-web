@@ -7,7 +7,6 @@ pipeline {
     }
 
     environment {
-        JAVA_OPTS = "-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400"
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = "346296964327.dkr.ecr.us-east-1.amazonaws.com/peopledb-app"
         vprofileRegistry = ""
@@ -16,55 +15,94 @@ pipeline {
     }
 
     stages {
-        stage('Checkout clonage du dépot') {
+        stage('Clonage du dépôt') {
             steps {
-                echo "======== Clonage du dépôt ========"
+                echo "📥 Clonage du dépôt"
                 git branch: 'master', url: 'https://github.com/lindor-crypto/springBoot-peopledb-web.git'
             }
         }
 
-        stage('Nettoyage du workspace') {
+        stage('Préparation') {
             steps {
-                echo "🧹 Nettoyage du dépôt local avant build"
+                echo "🧹 Nettoyage du dépôt local"
                 sh 'git clean -xfd'
                 sh 'git reset --hard'
+                sh 'chmod +x gradlew'
             }
         }
 
         stage('Check config') {
             steps {
-                echo "======== Vérification du fichier checkstyle.xml ========"
-                sh 'chmod +x config/checkstyle/checkstyle.xml'
-                sh 'ls -l config/checkstyle/checkstyle.xml'
+                echo "🔍 Vérification du fichier checkstyle.xml"
+                sh 'ls -l config/checkstyle/checkstyle.xml || true'
             }
         }
-        stage('Build avec Gradle') {
+
+        stage('Build & Tests') {
             steps {
-                echo "======== Construction du projet ========"
-                sh 'chmod +x gradlew'
-                sh './gradlew --no-daemon clean build -x test'
+                echo "🏗️ Build du projet et tests unitaires"
+                sh './gradlew clean build'
             }
         }
-        stage('Tests unitaires') {
-            steps {
-                echo "======== Exécution des tests ========"
-               /* sh './gradlew --no-daemon test' */
-            }
-        }
+
         stage('Analyse Checkstyle') {
             steps {
-                echo "======== Analyse Checkstyle ========"
-                sh './gradlew --no-daemon checkstyleMain'
+                echo "🔎 Analyse du code avec Checkstyle"
+                sh './gradlew checkstyleMain'
+            }
+        }
+
+        stage('Archivage du JAR') {
+            steps {
+                echo "📦 Archivage de l’artefact"
+                archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
+            }
+        }
+
+        stage('Build App Image') {
+            steps {
+                script {
+                    echo "🐳 Construction de l’image Docker"
+                    dockerImage = docker.build("${appRegistry}:${BUILD_NUMBER}")
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    echo "☁️ Envoi de l’image vers ECR"
+                    docker.withRegistry(vprofileRegistry, registryCredential) {
+                        dockerImage.push("${BUILD_NUMBER}")
+                        dockerImage.push("latest")
+                    }
+                }
+            }
+        }
+
+        stage('Nettoyage Docker') {
+            steps {
+                echo "🧹 Suppression des images locales"
+                sh 'docker rmi -f $(docker images -a -q) || true'
+            }
+        }
+
+        stage('Déploiement ECS') {
+            steps {
+                echo "🚀 Déploiement sur ECS"
+                withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                }
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build réussi."
+            echo "✅ Build terminé avec succès."
         }
         failure {
-            echo "❌ Échec du build."
+            echo "❌ Le build a échoué."
         }
     }
 }

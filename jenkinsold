@@ -1,10 +1,5 @@
 
-        stage('Analyse Checkstyle') {
-            steps {
-                echo "======== Analyse Checkstyle ========"
-                sh './gradlew --no-daemon checkstyleMain'
-            }
-        }
+
 
         stage('Archivage du JAR') {
             steps {
