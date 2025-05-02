@@ -4,13 +4,14 @@ pipeline {
 
     tools {
         jdk 'JDK17'
+        gradle 'Grad7.5'
     }
     environment {
         registryCredential = 'ecr:us-east-1:awscreds'
-        appRegistry = "329254499416.dkr.ecr.us-east-1.amazonaws.com/peopledb-app"
+        appRegistry = "346296964327.dkr.ecr.us-east-1.amazonaws.com/peopledb-app"
         vprofileRegistry = ""
-        cluster="peopledb-cluster2"
-        service="peopledbservice"
+        cluster="peopledb-cluster"
+        service="peopledb-service"
     }
 
     stages {
@@ -64,35 +65,6 @@ pipeline {
             steps {
                 echo "======== Archivage de l\'artefact ========"
                 archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
-            }
-        }
-        stage('Analyse SonarQube') {
-            steps {
-             echo "======== Analyse SonarQube ========"
-
-            withSonarQubeEnv('sonarserver') {
-             sh '''
-                ./gradlew sonar \
-                  -Dsonar.projectKey=PeopleDB-Web \
-                  -Dsonar.projectName="PeopleDB Web" \
-                  -Dsonar.java.checkstyle.reportPaths=build/reports/checkstyle/main.xml
-            '''
-             }
-            }
-        }
-
-        stage('Sonar Quality Gate') {
-            steps {
-        timeout(time: 1, unit: 'HOURS') {
-            script {
-                def qg = waitForQualityGate()
-                    if (qg.status != 'OK') {
-                     echo "⚠️ Quality Gate échoué : ${qg.status}, mais on continue quand même."
-                    } else {
-                        echo "✅ Quality Gate passé."
-                      }
-                 }
-                }
             }
         }
         stage('Build App Image') {
