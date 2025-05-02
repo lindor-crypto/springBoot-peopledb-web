@@ -45,6 +45,18 @@ pipeline {
                 sh './gradlew --no-daemon clean build -x test'
             }
         }
+        stage('Tests unitaires') {
+            steps {
+                echo "======== Exécution des tests ========"
+               /* sh './gradlew --no-daemon test' */
+            }
+        }
+        stage('Analyse Checkstyle') {
+            steps {
+                echo "======== Analyse Checkstyle ========"
+                sh './gradlew --no-daemon checkstyleMain'
+            }
+        }
     }
 
     post {

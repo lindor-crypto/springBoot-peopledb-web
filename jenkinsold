@@ -1,17 +1,3 @@
-        stage('Build avec Gradle') {
-            steps {
-                echo "======== Construction du projet ========"
-                sh 'chmod +x gradlew'
-                sh './gradlew --no-daemon clean build -x test'
-            }
-        }
-
-        stage('Tests unitaires') {
-            steps {
-                echo "======== Exécution des tests ========"
-                sh './gradlew --no-daemon test'
-            }
-        }
 
         stage('Analyse Checkstyle') {
             steps {
