@@ -31,6 +31,7 @@ public class PeopledbWebApplication implements WebMvcConfigurer {
 		return  new LocaleChangeInterceptor();
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());

@@ -3,7 +3,6 @@ package com.neutrinosys.peopledbweb.web.controller;
 import com.neutrinosys.peopledbweb.biz.model.Person;
 import com.neutrinosys.peopledbweb.biz.service.PersonService;
 import com.neutrinosys.peopledbweb.data.FileStorageRepository;
-import com.neutrinosys.peopledbweb.data.PersonDataLoader;
 import com.neutrinosys.peopledbweb.data.PersonRepository;
 import com.neutrinosys.peopledbweb.exception.StorageException;
 import lombok.extern.log4j.Log4j2;
@@ -21,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
