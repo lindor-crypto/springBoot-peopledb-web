@@ -38,6 +38,13 @@ pipeline {
                 sh 'ls -l config/checkstyle/checkstyle.xml'
             }
         }
+        stage('Build avec Gradle') {
+            steps {
+                echo "======== Construction du projet ========"
+                sh 'chmod +x gradlew'
+                sh './gradlew --no-daemon clean build -x test'
+            }
+        }
     }
 
     post {
